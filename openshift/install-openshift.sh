@@ -1,7 +1,9 @@
 #!/bin/sh
 
-DOCKER_DAEMON_JSON=/etc/docker/daemon.json
-OC_URL="https://github.com/openshift/origin/releases/download/v3.9.0/openshift-origin-client-tools-v3.9.0-191fece-linux-64bit.tar.gz"
+#DOCKER_DAEMON_JSON=/etc/docker/daemon.json
+DOCKER_DAEMON_JSON=~/.docker/config.json
+#OC_URL="https://github.com/openshift/origin/releases/download/v3.9.0/openshift-origin-client-tools-v3.9.0-191fece-linux-64bit.tar.gz"
+OC_URL="https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz"
 OC_FILENAME_TARGZ=`basename ${OC_URL}`
 
 date
@@ -11,7 +13,11 @@ cat /etc/redhat-release
 echo
 
 echo "## Install docker "
-yum -y install docker
+#yum -y install docker
+#docker
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum -y install docker-ce
 echo
 
 date
@@ -29,7 +35,7 @@ if [ -f "${DOCKER_DAEMON_JSON}" ]; then
   cp ${DOCKER_DAEMON_JSON} ${DOCKER_DAEMON_JSON}.org
 fi
 
-cat >${DOCKER_DAEMON_JSON} <<EOF
+tee ${DOCKER_DAEMON_JSON} <<EOF
 {
    "insecure-registries": [
      "172.30.0.0/16"
@@ -73,7 +79,8 @@ echo
 
 date
 echo "## Step 6: start up oc cluster"
-oc cluster up --host-data-dir="/opt"
+#oc cluster up --host-data-dir="/opt"
+oc cluster up --skip-registry-check=true  --public-hostname='openshift.cdnsvc.com'
 
 date
 docker images
